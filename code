@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title></title>
+ <style>
+ html, body {
+ height: 100%;
+ margin: 0%;
+ }
+ body {
+ background: papayawhip;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+ canvas {
+ border: 1px solid gray;
+ }
+ }
+ </style>
+</head>
+<body>
+
+<canvas width="500" height="400" id="snakegame"></canvas>
+<script>
+//canvas is the area our game will operate on
+var canvas = document.getElementById('snakegame');
+var context = canvas.getContext('2d');
+var grid = 16;
+var count = 0;
+//initialize coordinates of snake which should be multiples of the grid
+var snake = {
+ x: 96,
+ y: 96,
+ 
+//dx and dy are the changes in position of the snake
+ dx: grid,
+ dy: 0,
+ 
+//array bodycells keeps track of cells occupied by the snake at any given time
+ bodycells: [],
+ 
+ //maxcells stores no. of cells the snake is composed of
+ maxCells: 4
+};
+var food = {//initializes position of the group
+ x: 160,
+ y: 160
+};
+//randomly places food
+function getRandomInt(min, max) {
+ return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function loop() {//loop to start the game
+ requestAnimationFrame(loop);
+//count controls the frame rate, which is 60 fps at standard. Dividing it by the number reduces it by the factor of that number, slowing down the frame rate. 
+ if (++count < 4) {
+ return;
+ }
+ count = 0;
+ context.clearRect(0,0,canvas.width,canvas.height);
+
+ snake.x += snake.dx;
+ snake.y += snake.dy;
+//if snake approaches the edges of canvas, it will wrap and emerge from the other side of the canvas
+ if (snake.x < 0) {
+ snake.x = canvas.width - grid;
+ }
+ //if its going left, it'll emerge from the right
+ else if (snake.x >= canvas.width) {
+ snake.x = 0;
+ //if its going right, it'll emerge from the left
+ }
+ 
+
+ if (snake.y < 0) {
+ snake.y = canvas.height - grid;
+ }//if its going down, it'll emerge from the top
+ else if (snake.y >= canvas.height) {
+ snake.y = 0;
+ }//if its going up, it'll emerge from the bottom
+
+//the unshift command adds cells to the bodycell array
+ snake.bodycells.unshift({x: snake.x, y: snake.y});
+
+//we constantly add and delete body cells depending on where the   snake goes
+ if (snake.bodycells.length > snake.maxCells) {
+ snake.bodycells.pop();
+ }
+ //declaring the food
+ context.fillStyle = 'red';
+ context.fillRect(food.x, food.y, grid-1, grid-1);
+ //declaring a color for each cell of the snake
+ context.fillStyle = 'green';
+ snake.bodycells.forEach(function(cell, index) {
+ 
+
+ context.fillRect(cell.x, cell.y, grid-1, grid-1); 
+//in the event that the snake eats the food
+ if (cell.x === food.x && cell.y === food.y) {
+ snake.maxCells++;
+
+//increases cell length
+ food.x = getRandomInt(0, 25) * grid;
+ food.y = getRandomInt(0, 25) * grid;
+ }
+//loop to check if snake crashes into itself
+ for (var i = index + 1; i < snake.bodycells.length; i++) {
+ 
+
+ if (cell.x === snake.bodycells[i].x && cell.y === snake.bodycells[i].y) {
+ snake.x = 96;
+ snake.y = 96;
+ snake.bodycells = [];
+ snake.maxCells = 4;
+ snake.dx = grid;
+ snake.dy = 0;
+ food.x = getRandomInt(0, 25) * grid;
+ food.y = getRandomInt(0, 25) * grid;
+ }
+ }
+ });
+}
+//listening to keyboard controls. snake.dx and snake.dy
+//ensure that nothing happens if user presses right when snake is already going at the right, and so on.
+document.addEventListener('keydown', function(e) {
+ //left control
+ if (e.which === 37 && snake.dx === 0) {
+ snake.dx = -grid;
+ snake.dy = 0;
+ }
+//up control
+ else if (e.which === 38 && snake.dy === 0) {
+ snake.dy = -grid;
+ snake.dx = 0;
+ }
+//right control
+ else if (e.which === 39 && snake.dx === 0) {
+ snake.dx = grid;
+ snake.dy = 0;
+ }
+//down control
+ else if (e.which === 40 && snake.dy === 0) {
+ snake.dy = grid;
+ snake.dx = 0;
+ }
+});
+//start the game
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
